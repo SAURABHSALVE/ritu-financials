@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
   },
 
   reactStrictMode: true,
+
+  // Fix: Turbopack was detecting C:\Users\HP\package-lock.json as the workspace
+  // root, which broke Tailwind CSS resolution. Pin it to this directory.
+  turbopack: {
+    root: __dirname,
+  },
 };
 
 export default nextConfig;

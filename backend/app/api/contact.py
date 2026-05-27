@@ -38,7 +38,7 @@ async def submit_contact(form: ContactForm) -> dict:
     or persist to a database. For now, acknowledges receipt.
     """
     # TODO: integrate email sending or DB persistence here
-    print(f"[Contact] from={form.email!r}  name={form.name!r}")
+    print(f"[Contact] name={form.name!r}  email={form.email!r}  message={form.message!r}")
     return {
         "status": "received",
         "message": "Thanks for reaching out! We'll get back to you within 24 hours.",
