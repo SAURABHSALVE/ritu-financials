@@ -16,13 +16,29 @@ Static files are output to `frontend/out/`. You can upload that folder anywhere,
 
 ## Option A — Vercel (recommended)
 
+The repo includes **`vercel.json`** at the root so builds work without guessing paths.
+
 1. Push the repo to GitHub.
-2. [vercel.com](https://vercel.com) → **Add Project** → import the repo.
-3. Settings:
+2. [vercel.com](https://vercel.com) → **Add Project** → import **ritu-financials**.
+3. Use **one** setup:
+
+   **A — Recommended (uses root `vercel.json`):**
+   - **Root Directory:** leave **empty**
+   - Clear any custom **Output Directory** / **Build Command** overrides
+   - Deploy
+
+   **B — Manual:**
    - **Root Directory:** `frontend`
+   - **Output Directory:** `out` only (not `frontend/out`)
    - **Build Command:** `npm run build`
-   - **Output Directory:** `out`
-4. Deploy. Vercel detects Next.js static export automatically.
+
+4. After deploy, open the `.vercel.app` URL (homepage `/`).
+
+### Vercel shows 404?
+
+- **Wrong output folder:** If Root Directory = `frontend`, Output must be **`out`**, not `frontend/out`.
+- **Fix:** Project → **Settings** → **General** → reset Root/Output, redeploy using setup **A** above.
+- Check **Deployments** → latest build log — it should succeed and produce `frontend/out/index.html`.
 
 ---
 
