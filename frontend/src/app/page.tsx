@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, type FormEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { VideoReviewCard } from '@/components/VideoReviewCard';
+import { EnrollmentSection } from '@/components/EnrollmentSection';
+import { WHATSAPP_DEFAULT, TELEGRAM_DEFAULT, enrollLinks } from '@/lib/contact-links';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const WA_RESERVE = enrollLinks('reserve').whatsapp;
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
+  { label: 'Enroll',     id: 'enroll'     },
   { label: 'Journey',    id: 'journey'    },
   { label: 'Curriculum', id: 'mentorship' },
   { label: 'Bonuses',    id: 'bonuses'    },
@@ -23,9 +27,11 @@ const STATS = [
 ];
 
 const TICKER = [
+  '✦ JUNE 2026 batch starts 8 June — only 10 seats left',
+  '✦ Reserve your seat with just ₹2,000 on UPI',
   '✦ Arjun passed his first prop-firm challenge',
   '✦ 250+ traders trained across 5+ batches',
-  '✦ 100% live classes — no pre-recorded content',
+  '✦ 100% live classes + session recordings',
   '✦ Priya hit consistent green months after Batch 4',
   '✦ Batch 6 now enrolling — only 25 spots',
   '✦ Rohan went from blown accounts to funded trader',
@@ -138,6 +144,21 @@ const BONUSES = [
   { icon: '🏕️', color: 'teal',   title: 'Offline Bootcamps & Meetups',      desc: 'In-person events for hands-on learning, networking, and community building.' },
 ];
 
+const VIDEO_REVIEWS = [
+  {
+    name: 'Manpreet Singh',
+    role: 'FX:Rich Graduate · Batch Alumni',
+    src: process.env.NEXT_PUBLIC_VIDEO_REVIEW_1 ?? '/videos/review-1.mp4',
+    poster: process.env.NEXT_PUBLIC_POSTER_REVIEW_1 ?? '/videos/review-1-poster.webp',
+  },
+  {
+    name: 'Janhavi ',
+    role: 'FX:Rich Graduate · Batch Alumni',
+    src: process.env.NEXT_PUBLIC_VIDEO_REVIEW_2 ?? '/videos/review-2.mp4',
+    poster: process.env.NEXT_PUBLIC_POSTER_REVIEW_2 ?? '/videos/review-2-poster.webp',
+  },
+] as const;
+
 const REVIEWS = [
   { name: 'Arjun Mehta',     role: 'IT Professional, Mumbai',   stars: 5,
     text: "Before joining FX:Rich, I had blown two accounts chasing random signals. Ritu's structured approach completely changed how I see the market. Week 2 alone — just the market structure sessions — was worth everything. I passed my first prop-firm challenge 3 weeks after the batch ended." },
@@ -175,11 +196,6 @@ const C: Record<string, { border: string; text: string; bg: string; badge: strin
   cyan:    { border: 'border-cyan-500/30',    text: 'text-cyan-400',    bg: 'bg-cyan-500/10',    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25',         dot: 'bg-cyan-500',       glow: 'hover:shadow-cyan-500/15'    },
   teal:    { border: 'border-teal-500/30',    text: 'text-teal-400',    bg: 'bg-teal-500/10',    badge: 'bg-teal-500/15 text-teal-400 border-teal-500/25',         dot: 'bg-teal-500',       glow: 'hover:shadow-teal-500/15'    },
 };
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type FormState = { name: string; email: string; message: string };
-type Status    = 'idle' | 'loading' | 'success' | 'error';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -328,10 +344,6 @@ function WeekCard({ data, index }: { data: typeof WEEKS[0]; index: number }) {
 export default function Home() {
   const [scrolled,  setScrolled]  = useState(false);
   const [menuOpen,  setMenuOpen]  = useState(false);
-  const [form,      setForm]      = useState<FormState>({ name: '', email: '', message: '' });
-  const [status,    setStatus]    = useState<Status>('idle');
-  const [errorMsg,  setErrorMsg]  = useState('');
-  const lastSubmit = useRef(0);
 
   const statsRef  = useRef<HTMLDivElement>(null);
   const [statsOn, setStatsOn] = useState(false);
@@ -354,37 +366,6 @@ export default function Home() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMenuOpen(false);
   };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const now = Date.now();
-      if (status === 'loading' || now - lastSubmit.current < 3000) return;
-      lastSubmit.current = now;
-      setStatus('loading');
-      setErrorMsg('');
-      try {
-        const res = await fetch(`${API_URL}/api/contact`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error((data as { detail?: string }).detail ?? 'Server error. Please try again.');
-        }
-        setStatus('success');
-        setForm({ name: '', email: '', message: '' });
-      } catch (err) {
-        setStatus('error');
-        setErrorMsg(err instanceof Error ? err.message : 'Something went wrong.');
-      }
-    },
-    [form, status]
-  );
 
   return (
     <>
@@ -410,10 +391,10 @@ export default function Home() {
           </ul>
 
           <button
-            onClick={() => scrollTo('contact')}
-            className="hidden md:inline-flex rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2 text-sm font-bold text-gray-950 hover:brightness-110 transition-all animate-glow"
+            onClick={() => scrollTo('enroll')}
+            className="hidden md:inline-flex rounded-lg bg-gradient-to-r from-amber-500 to-emerald-500 px-5 py-2 text-sm font-bold text-gray-950 hover:brightness-110 transition-all animate-glow"
           >
-            Join Next Batch
+            Enroll Now
           </button>
 
           <button className="md:hidden text-gray-400 hover:text-white p-1" onClick={() => setMenuOpen(o => !o)}>
@@ -431,8 +412,8 @@ export default function Home() {
                 {link.label}
               </button>
             ))}
-            <button onClick={() => scrollTo('contact')} className="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 py-3 text-sm font-bold text-gray-950 text-center mt-1">
-              Join Next Batch
+            <button onClick={() => scrollTo('enroll')} className="rounded-lg bg-gradient-to-r from-amber-500 to-emerald-500 py-3 text-sm font-bold text-gray-950 text-center mt-1">
+              Enroll — June Batch
             </button>
           </div>
         )}
@@ -464,7 +445,7 @@ export default function Home() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
                 </span>
-                Forex Mastery 2025 · Batch Now Open · Limited Spots
+                June 2026 Batch · Starts 8 June · Only 10 Seats
               </div>
             </Fade>
 
@@ -489,16 +470,16 @@ export default function Home() {
             <Fade delay={300}>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
                 <button
-                  onClick={() => scrollTo('mentorship')}
-                  className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-9 py-4 font-bold text-gray-950 hover:brightness-110 transition-all hover:scale-105 shadow-2xl shadow-emerald-500/30 animate-glow"
+                  onClick={() => scrollTo('enroll')}
+                  className="rounded-xl bg-gradient-to-r from-amber-500 to-emerald-500 px-9 py-4 font-bold text-gray-950 hover:brightness-110 transition-all hover:scale-105 shadow-2xl shadow-amber-500/25 animate-glow"
                 >
-                  View Full Curriculum
+                  Enroll — June Batch →
                 </button>
                 <button
-                  onClick={() => scrollTo('journey')}
+                  onClick={() => scrollTo('mentorship')}
                   className="rounded-xl border border-gray-700 px-9 py-4 font-semibold text-white hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all"
                 >
-                  Ritu&apos;s Story →
+                  View Curriculum
                 </button>
               </div>
             </Fade>
@@ -523,6 +504,9 @@ export default function Home() {
         {/* Ticker */}
         <MarqueeTicker />
 
+        {/* ════ JUNE ENROLLMENT ════ */}
+        <EnrollmentSection />
+
         {/* ════ MENTORSHIP STRUCTURE ════ */}
         <section className="py-16 px-6 bg-gray-900/40 border-b border-gray-800/50">
           <div className="max-w-5xl mx-auto">
@@ -533,7 +517,7 @@ export default function Home() {
                 { icon: '🎥', label: 'Live-Only Experience',  value: '100% Live Classes — No Pre-recorded Sessions',           color: 'cyan'    },
                 { icon: '💻', label: 'Platform',              value: 'Sessions Conducted via Zoom',                            color: 'violet'  },
                 { icon: '⏺️', label: 'Session Recordings',   value: 'Available for Limited Time (revision only)',              color: 'amber'   },
-                { icon: '👥', label: 'Small Batch Size',      value: 'Only 10–25 Students Per Batch',                          color: 'rose'    },
+                { icon: '👥', label: 'June Batch Size',       value: 'Only 10 Seats — Personal Attention Guaranteed',          color: 'rose'    },
                 { icon: '📅', label: 'Total Sessions',        value: '15 Live Sessions across 5 Weeks',                        color: 'teal'    },
               ].map((item, i) => {
                 const c = C[item.color] ?? C.emerald;
@@ -617,12 +601,17 @@ export default function Home() {
             <div className="grid lg:grid-cols-2 gap-14 items-center">
               <Fade className="order-last lg:order-first">
                 <div className="relative">
-                  <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/60 flex flex-col items-center justify-center gap-3 overflow-hidden card-gradient-border">
-                    <svg className="w-20 h-20 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <p className="text-gray-600 text-sm font-medium">Ritu&apos;s photo here</p>
-                    <svg className="absolute bottom-0 left-0 right-0 w-full text-emerald-600/40" height="80" viewBox="0 0 400 80" preserveAspectRatio="none">
+                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-gray-700/60 card-gradient-border bg-gray-900">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/images/ritu.png"
+                      alt="Ritu, founder of FX:Rich Traders"
+                      className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-transparent to-transparent pointer-events-none" />
+                    <svg className="absolute bottom-0 left-0 right-0 w-full text-emerald-500/50 pointer-events-none" height="80" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden>
                       <polyline points="0,70 60,52 130,58 190,28 250,38 310,14 360,22 400,8" fill="none" stroke="currentColor" strokeWidth="2" />
                     </svg>
                   </div>
@@ -713,10 +702,10 @@ export default function Home() {
                   Your next 5 weeks can change your next 5 years.
                 </p>
                 <button
-                  onClick={() => scrollTo('contact')}
+                  onClick={() => scrollTo('enroll')}
                   className="inline-flex rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-10 py-3.5 font-bold text-gray-950 hover:brightness-110 transition-all hover:scale-105 shadow-xl shadow-emerald-500/25 animate-glow"
                 >
-                  Apply for the Next Batch →
+                  Enroll — June Batch →
                 </button>
               </div>
             </Fade>
@@ -758,8 +747,23 @@ export default function Home() {
             <SectionHeader
               eyebrow="Student Reviews"
               title={<>Real Traders, <span className="text-emerald-400">Real Results</span></>}
-              sub="250+ students trained across multiple batches. Here's what they have to say."
+              sub="250+ students trained across multiple batches — hear from them on video and in their own words."
             />
+
+            {/* Video testimonials — lazy-loaded; no download until play */}
+            <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto mb-16">
+              {VIDEO_REVIEWS.map((video, i) => (
+                <Fade key={i} delay={i * 100}>
+                  <VideoReviewCard {...video} />
+                </Fade>
+              ))}
+            </div>
+
+            <Fade className="mb-8">
+              <p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
+                Written reviews
+              </p>
+            </Fade>
 
             <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
               {REVIEWS.map((review, i) => (
@@ -871,93 +875,66 @@ export default function Home() {
           <div className="max-w-5xl mx-auto relative z-10">
             <SectionHeader
               eyebrow="Get In Touch"
-              title={<>Ready to <span className="text-emerald-400">Join the Next Batch?</span></>}
-              sub="Batches are limited to 10–25 students — secure your spot early."
+              title={<>Questions Before <span className="text-emerald-400">You Enroll?</span></>}
+              sub="June batch starts 8 June 2026. Use the enrollment section above for UPI & seat booking — or message us here."
             />
 
-            <div className="grid lg:grid-cols-5 gap-8 items-start">
-              <Fade delay={0} className="lg:col-span-2 space-y-5">
-                <div className="rounded-2xl bg-gray-900 border border-gray-800 p-6 card-gradient-border">
-                  <h3 className="font-bold text-white mb-4">Contact Directly</h3>
-                  <div className="space-y-3">
-                    <a href="https://wa.me/919284223699" target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl bg-[#25D366]/8 border border-[#25D366]/20 hover:bg-[#25D366]/15 transition-colors">
-                      <svg className="w-5 h-5 shrink-0 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                      </svg>
-                      <div>
-                        <p className="text-xs text-gray-500">WhatsApp</p>
-                        <p className="text-sm font-semibold text-white">+91 92842 23699</p>
-                      </div>
-                    </a>
-                    <a href="https://t.me/rithuusalve" target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl bg-[#0088cc]/8 border border-[#0088cc]/20 hover:bg-[#0088cc]/15 transition-colors">
-                      <svg className="w-5 h-5 shrink-0 text-[#0088cc]" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                      </svg>
-                      <div>
-                        <p className="text-xs text-gray-500">Telegram</p>
-                        <p className="text-sm font-semibold text-white">@rithuusalve</p>
-                      </div>
-                    </a>
-                  </div>
-                </div>
+            <Fade>
+              <div className="max-w-xl mx-auto space-y-6">
+                <button
+                  type="button"
+                  onClick={() => scrollTo('enroll')}
+                  className="w-full rounded-2xl border border-amber-500/30 bg-amber-500/10 px-6 py-4 text-sm font-bold text-amber-300 hover:bg-amber-500/15 transition-colors"
+                >
+                  ↑ Go to June Enrollment (UPI + ₹2,000 booking)
+                </button>
 
-                <div className="rounded-2xl bg-gradient-to-br from-emerald-500/8 to-teal-500/5 border border-emerald-500/20 p-6 space-y-3">
-                  <h4 className="font-bold text-white text-sm">What happens next?</h4>
-                  {['Fill out the form or message on WhatsApp', "We'll confirm your spot and share batch details", 'Onboarding call before the first session', 'You start trading smarter in Week 1'].map((step, i) => (
+                <a
+                  href={WHATSAPP_DEFAULT}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 w-full rounded-2xl px-8 py-5 font-bold text-white transition-all hover:scale-[1.02] hover:brightness-110 shadow-2xl shadow-[#25D366]/25"
+                  style={{ backgroundColor: '#25D366' }}
+                >
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                  </svg>
+                  Ask on WhatsApp (message pre-typed)
+                </a>
+
+                <a
+                  href={TELEGRAM_DEFAULT}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 w-full rounded-2xl px-8 py-5 font-bold text-white transition-all hover:scale-[1.02] hover:brightness-110 shadow-2xl shadow-[#0088cc]/25"
+                  style={{ backgroundColor: '#0088cc' }}
+                >
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                  </svg>
+                  Ask on Telegram (message pre-typed)
+                </a>
+
+                <p className="text-center text-sm text-gray-500">
+                  +91 92842 23699 · @rithuusalve
+                </p>
+
+                <div className="rounded-2xl bg-gradient-to-br from-emerald-500/8 to-teal-500/5 border border-emerald-500/20 p-6 space-y-3 card-gradient-border">
+                  <h4 className="font-bold text-white text-sm text-center">What happens next?</h4>
+                  {[
+                    'Pay ₹2,000 on UPI & message us with screenshot',
+                    "We'll confirm your spot and share batch details",
+                    'Onboarding call before the first session',
+                    'You start trading smarter in Week 1',
+                  ].map((step, i) => (
                     <div key={i} className="flex gap-3 text-sm text-gray-400">
                       <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                       {step}
                     </div>
                   ))}
                 </div>
-              </Fade>
-
-              <Fade delay={150} className="lg:col-span-3">
-                <form onSubmit={handleSubmit} noValidate className="rounded-2xl bg-gray-900 border border-gray-800 p-8 space-y-5 card-gradient-border">
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-semibold text-gray-300 mb-1.5">Name</label>
-                      <input id="name" name="name" type="text" required value={form.name} onChange={handleChange}
-                        placeholder="Your full name"
-                        className="w-full rounded-lg bg-gray-800/80 border border-gray-700 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors text-sm" />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-1.5">Email</label>
-                      <input id="email" name="email" type="email" required value={form.email} onChange={handleChange}
-                        placeholder="you@example.com"
-                        className="w-full rounded-lg bg-gray-800/80 border border-gray-700 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors text-sm" />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-semibold text-gray-300 mb-1.5">Message</label>
-                    <textarea id="message" name="message" required rows={5} value={form.message} onChange={handleChange}
-                      placeholder="Tell us about your trading background, goals, or any questions about the mentorship…"
-                      className="w-full rounded-lg bg-gray-800/80 border border-gray-700 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors resize-none text-sm" />
-                  </div>
-
-                  {status === 'success' && (
-                    <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-emerald-400 text-sm font-medium">
-                      ✓ Message sent! We&apos;ll get back to you within 24 hours.
-                    </div>
-                  )}
-                  {status === 'error' && (
-                    <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-400 text-sm font-medium">
-                      ✗ {errorMsg || 'Something went wrong. Please try again.'}
-                    </div>
-                  )}
-
-                  <button type="submit" disabled={status === 'loading'}
-                    className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 font-bold text-gray-950 hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 animate-glow">
-                    {status === 'loading' ? (
-                      <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Sending…</>
-                    ) : 'Send Message & Apply →'}
-                  </button>
-                  <p className="text-center text-xs text-gray-600">Or reach out directly on WhatsApp for a faster response.</p>
-                </form>
-              </Fade>
-            </div>
+              </div>
+            </Fade>
           </div>
         </section>
       </main>
@@ -998,12 +975,14 @@ export default function Home() {
 
       {/* ════ MOBILE STICKY CTA ════ */}
       <div className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-gray-950/95 backdrop-blur-xl border-t border-gray-800 px-4 py-3">
-        <button
-          onClick={() => scrollTo('contact')}
-          className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 font-bold text-gray-950 hover:brightness-110 transition-all text-sm shadow-xl shadow-emerald-500/20"
+        <a
+          href={WA_RESERVE}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center justify-center rounded-xl bg-[#25D366] py-3.5 font-bold text-white hover:brightness-110 transition-all text-sm shadow-xl shadow-[#25D366]/30"
         >
-          Join Next Batch — Apply Now
-        </button>
+          Reserve Seat — ₹2,000
+        </a>
       </div>
     </>
   );

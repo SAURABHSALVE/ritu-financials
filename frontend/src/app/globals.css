@@ -66,6 +66,26 @@
 }
 .animate-spin-slow { animation: spin-slow 18s linear infinite; }
 
+/* ─── Enrollment section ─────────────────────────────────────────────────────── */
+@keyframes enroll-rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes seat-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+  50%      { transform: scale(1.03); box-shadow: 0 0 24px 4px rgba(16, 185, 129, 0.25); }
+}
+@keyframes border-glow {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+.enroll-rise {
+  opacity: 0;
+  animation: enroll-rise 0.75s ease-out forwards;
+}
+.enroll-seat-pulse { animation: seat-pulse 3s ease-in-out infinite; }
+.enroll-border-glow { animation: border-glow 4s ease-in-out infinite; }
+
 /* ─── Gradient border cards ──────────────────────────────────────────────────── */
 .card-gradient-border {
   position: relative;
