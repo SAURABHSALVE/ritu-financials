@@ -245,10 +245,10 @@ function Fade({ children, delay = 0, className = '' }: { children: React.ReactNo
 
 function SectionHeader({ eyebrow, title, sub }: { eyebrow: string; title: React.ReactNode; sub?: string }) {
   return (
-    <Fade className="text-center mb-14">
-      <span className="inline-block text-xs font-bold uppercase tracking-[0.22em] text-emerald-400 mb-3">{eyebrow}</span>
-      <h2 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">{title}</h2>
-      {sub && <p className="mt-4 text-gray-400 max-w-2xl mx-auto text-base leading-relaxed">{sub}</p>}
+    <Fade className="text-center mb-10 sm:mb-14 px-1">
+      <span className="inline-block text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] sm:tracking-[0.22em] text-emerald-400 mb-3">{eyebrow}</span>
+      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">{title}</h2>
+      {sub && <p className="mt-3 sm:mt-4 text-gray-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">{sub}</p>}
     </Fade>
   );
 }
@@ -355,6 +355,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
     const el = statsRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStatsOn(true); }, { threshold: 0.4 });
@@ -370,11 +377,11 @@ export default function Home() {
   return (
     <>
       {/* ════ NAVBAR ════ */}
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+      <header className={`fixed top-0 inset-x-0 z-50 safe-top transition-all duration-300 ${
         scrolled ? 'bg-gray-950/95 backdrop-blur-xl border-b border-gray-800/70 shadow-xl shadow-black/40' : 'bg-transparent'
       }`}>
-        <nav className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-          <button onClick={() => scrollTo('hero')} className="text-xl font-extrabold tracking-tight">
+        <nav className="max-w-6xl mx-auto px-4 sm:px-5 h-14 sm:h-16 flex items-center justify-between gap-2">
+          <button onClick={() => scrollTo('hero')} className="touch-target text-lg sm:text-xl font-extrabold tracking-tight -ml-1">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300 animate-gradient">FX:Rich</span>
             <span className="hidden sm:inline text-gray-600 font-normal text-sm ml-2">Traders</span>
           </button>
@@ -397,7 +404,7 @@ export default function Home() {
             Enroll Now
           </button>
 
-          <button className="md:hidden text-gray-400 hover:text-white p-1" onClick={() => setMenuOpen(o => !o)}>
+          <button type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} className="md:hidden touch-target text-gray-400 hover:text-white p-2 -mr-1" onClick={() => setMenuOpen(o => !o)}>
             {menuOpen
               ? <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               : <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -406,51 +413,52 @@ export default function Home() {
         </nav>
 
         {menuOpen && (
-          <div className="md:hidden bg-gray-900/98 backdrop-blur-xl border-b border-gray-800 px-5 py-5 flex flex-col gap-3">
+          <div className="md:hidden bg-gray-900/98 backdrop-blur-xl border-b border-gray-800 px-4 py-4 flex flex-col gap-1 max-h-[min(70vh,480px)] overflow-y-auto overscroll-contain">
             {NAV_LINKS.map(link => (
-              <button key={link.id} onClick={() => scrollTo(link.id)} className="text-left text-gray-300 hover:text-emerald-400 transition-colors font-medium py-1">
+              <button key={link.id} type="button" onClick={() => scrollTo(link.id)} className="touch-target text-left text-gray-300 hover:text-emerald-400 transition-colors font-medium py-3 px-2 rounded-lg active:bg-gray-800/80">
                 {link.label}
               </button>
             ))}
-            <button onClick={() => scrollTo('enroll')} className="rounded-lg bg-gradient-to-r from-amber-500 to-emerald-500 py-3 text-sm font-bold text-gray-950 text-center mt-1">
+            <button type="button" onClick={() => scrollTo('enroll')} className="touch-target rounded-xl bg-gradient-to-r from-amber-500 to-emerald-500 py-3.5 text-sm font-bold text-gray-950 text-center mt-2">
               Enroll — June Batch
             </button>
           </div>
         )}
       </header>
 
-      <main className="overflow-x-hidden bg-gray-950">
+      <main className="overflow-x-hidden bg-gray-950 main-pad-mobile md:pb-0">
 
         {/* ════ HERO ════ */}
-        <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center pt-16 overflow-hidden">
+        <section id="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-center px-4 sm:px-6 text-center pt-[calc(3.5rem+env(safe-area-inset-top))] sm:pt-16 pb-24 sm:pb-8 overflow-hidden">
 
-          {/* Floating gradient orbs */}
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[120px] animate-float-a pointer-events-none" />
-          <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-cyan-500/6 blur-[100px] animate-float-b pointer-events-none" />
-          <div className="absolute bottom-1/4 left-1/3 w-[350px] h-[350px] rounded-full bg-teal-500/5 blur-[90px] animate-float-c pointer-events-none" />
+          {/* Floating gradient orbs — smaller on phones */}
+          <div className="absolute top-1/4 left-1/4 w-[min(90vw,500px)] h-[min(90vw,500px)] rounded-full bg-emerald-500/8 blur-[80px] sm:blur-[120px] animate-float-a pointer-events-none" />
+          <div className="absolute top-1/3 right-1/4 w-[min(70vw,400px)] h-[min(70vw,400px)] rounded-full bg-cyan-500/6 blur-[70px] sm:blur-[100px] animate-float-b pointer-events-none" />
+          <div className="absolute bottom-1/4 left-1/3 w-[min(60vw,350px)] h-[min(60vw,350px)] rounded-full bg-teal-500/5 blur-[60px] sm:blur-[90px] animate-float-c pointer-events-none" />
 
           {/* Grid overlay */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)', backgroundSize: '72px 72px' }} />
 
-          {/* Decorative ring */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full border border-emerald-500/5 animate-spin-slow pointer-events-none" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full border border-emerald-500/3 pointer-events-none" />
+          {/* Decorative ring — desktop only (avoids horizontal scroll on phones) */}
+          <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full border border-emerald-500/5 animate-spin-slow pointer-events-none" />
+          <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full border border-emerald-500/3 pointer-events-none" />
 
           <div className="relative z-10 max-w-4xl w-full">
             {/* Live badge */}
             <Fade>
-              <div className="inline-flex items-center gap-2.5 mb-6 rounded-full border border-amber-500/30 bg-amber-500/8 px-4 py-1.5 text-sm font-semibold text-amber-400 tracking-wide animate-shimmer">
-                <span className="relative flex h-2 w-2">
+              <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-6 max-w-[95vw] rounded-full border border-amber-500/30 bg-amber-500/8 px-3 sm:px-4 py-1.5 text-[11px] sm:text-sm font-semibold text-amber-400 tracking-wide animate-shimmer">
+                <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
                 </span>
-                June 2026 Batch · Starts 8 June · Only 10 Seats
+                <span className="sm:hidden">June Batch · 8 June · 10 Seats</span>
+                <span className="hidden sm:inline">June 2026 Batch · Starts 8 June · Only 10 Seats</span>
               </div>
             </Fade>
 
             <Fade delay={100}>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white">
+              <h1 className="text-[1.75rem] leading-[1.12] min-[400px]:text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white">
                 Transform Your{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 animate-gradient">
                   Mindset, Skillset
@@ -460,7 +468,7 @@ export default function Home() {
             </Fade>
 
             <Fade delay={200}>
-              <p className="mt-6 text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              <p className="mt-5 sm:mt-6 text-base sm:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed px-1">
                 This isn&apos;t just a mentorship — it&apos;s a{' '}
                 <strong className="text-white">5-week journey</strong> to become the trader
                 you were meant to be. Live classes, real markets, proven strategy by Rithuu&apos;s FX:Rich Traders.
@@ -468,16 +476,18 @@ export default function Home() {
             </Fade>
 
             <Fade delay={300}>
-              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-md sm:max-w-none mx-auto">
                 <button
+                  type="button"
                   onClick={() => scrollTo('enroll')}
-                  className="rounded-xl bg-gradient-to-r from-amber-500 to-emerald-500 px-9 py-4 font-bold text-gray-950 hover:brightness-110 transition-all hover:scale-105 shadow-2xl shadow-amber-500/25 animate-glow"
+                  className="touch-target w-full sm:w-auto rounded-xl bg-gradient-to-r from-amber-500 to-emerald-500 px-6 sm:px-9 py-3.5 sm:py-4 font-bold text-gray-950 hover:brightness-110 active:scale-[0.98] sm:hover:scale-105 transition-all shadow-2xl shadow-amber-500/25 animate-glow"
                 >
                   Enroll — June Batch →
                 </button>
                 <button
+                  type="button"
                   onClick={() => scrollTo('mentorship')}
-                  className="rounded-xl border border-gray-700 px-9 py-4 font-semibold text-white hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all"
+                  className="touch-target w-full sm:w-auto rounded-xl border border-gray-700 px-6 sm:px-9 py-3.5 sm:py-4 font-semibold text-white hover:border-emerald-500/50 hover:bg-emerald-500/5 active:bg-emerald-500/10 transition-all"
                 >
                   View Curriculum
                 </button>
@@ -494,7 +504,7 @@ export default function Home() {
             </Fade>
           </div>
 
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="hidden sm:block absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -508,7 +518,7 @@ export default function Home() {
         <EnrollmentSection />
 
         {/* ════ MENTORSHIP STRUCTURE ════ */}
-        <section className="py-16 px-6 bg-gray-900/40 border-b border-gray-800/50">
+        <section className="py-12 sm:py-16 px-4 sm:px-6 bg-gray-900/40 border-b border-gray-800/50">
           <div className="max-w-5xl mx-auto">
             <SectionHeader eyebrow="How It Works" title={<>Mentorship Structure <span className="text-emerald-400">&amp; Format</span></>} />
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -538,7 +548,7 @@ export default function Home() {
         </section>
 
         {/* ════ IS THIS FOR YOU? ════ */}
-        <section className="py-20 px-6">
+        <section className="py-14 sm:py-20 px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <SectionHeader eyebrow="Who It's For" title={<>Is This <span className="text-emerald-400">Right For You?</span></>} />
             <div className="grid md:grid-cols-2 gap-6">
@@ -589,7 +599,7 @@ export default function Home() {
         </section>
 
         {/* ════ JOURNEY ════ */}
-        <section id="journey" className="py-24 px-6 bg-gray-900/40 border-y border-gray-800/50 relative overflow-hidden">
+        <section id="journey" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-900/40 border-y border-gray-800/50 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/4 blur-[130px] pointer-events-none" />
           <div className="max-w-6xl mx-auto relative z-10">
             <SectionHeader
@@ -655,7 +665,7 @@ export default function Home() {
         </section>
 
         {/* ════ CURRICULUM ════ */}
-        <section id="mentorship" className="py-24 px-6">
+        <section id="mentorship" className="py-16 sm:py-24 px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <SectionHeader
               eyebrow="Curriculum"
@@ -713,7 +723,7 @@ export default function Home() {
         </section>
 
         {/* ════ BONUSES ════ */}
-        <section id="bonuses" className="py-24 px-6 bg-gray-900/40 border-y border-gray-800/50 relative overflow-hidden">
+        <section id="bonuses" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-900/40 border-y border-gray-800/50 relative overflow-hidden">
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/5 blur-[100px] pointer-events-none" />
           <div className="max-w-5xl mx-auto relative z-10">
             <SectionHeader
@@ -742,7 +752,7 @@ export default function Home() {
         </section>
 
         {/* ════ REVIEWS ════ */}
-        <section id="reviews" className="py-24 px-6">
+        <section id="reviews" className="py-16 sm:py-24 px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">
             <SectionHeader
               eyebrow="Student Reviews"
@@ -811,7 +821,7 @@ export default function Home() {
         </section>
 
         {/* ════ COMMUNITY ════ */}
-        <section id="community" className="py-24 px-6 bg-gray-900/40 border-y border-gray-800/50">
+        <section id="community" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-900/40 border-y border-gray-800/50">
           <div className="max-w-4xl mx-auto">
             <SectionHeader
               eyebrow="Community"
@@ -839,9 +849,9 @@ export default function Home() {
             </div>
 
             <Fade>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-lg sm:max-w-none mx-auto">
                 <a href="https://t.me/rithuusalve" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-3 rounded-xl px-7 py-4 font-bold text-white transition-all hover:scale-105 hover:brightness-110 shadow-lg"
+                  className="touch-target inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-xl px-5 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white transition-all active:scale-[0.98] sm:hover:scale-105 hover:brightness-110 shadow-lg"
                   style={{ backgroundColor: '#0088cc' }}>
                   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
@@ -849,7 +859,7 @@ export default function Home() {
                   Telegram: @rithuusalve
                 </a>
                 <a href="https://instagram.com/rithuusalve" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-3 rounded-xl px-7 py-4 font-bold text-white transition-all hover:scale-105 hover:brightness-110 shadow-lg"
+                  className="touch-target inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-xl px-5 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white transition-all active:scale-[0.98] sm:hover:scale-105 hover:brightness-110 shadow-lg"
                   style={{ background: 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
                   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
@@ -857,12 +867,12 @@ export default function Home() {
                   Instagram: @rithuusalve
                 </a>
                 <a href="https://wa.me/919284223699" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-3 rounded-xl px-7 py-4 font-bold text-white transition-all hover:scale-105 hover:brightness-110 shadow-lg"
+                  className="touch-target inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-xl px-5 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white transition-all active:scale-[0.98] sm:hover:scale-105 hover:brightness-110 shadow-lg"
                   style={{ backgroundColor: '#25D366' }}>
                   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
                   </svg>
-                  WhatsApp: +91 92842 23699
+                  <span className="truncate">WhatsApp: +91 92842 23699</span>
                 </a>
               </div>
             </Fade>
@@ -870,7 +880,7 @@ export default function Home() {
         </section>
 
         {/* ════ CONTACT ════ */}
-        <section id="contact" className="py-24 px-6 relative overflow-hidden">
+        <section id="contact" className="py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/5 blur-[120px] pointer-events-none" />
           <div className="max-w-5xl mx-auto relative z-10">
             <SectionHeader
@@ -893,7 +903,7 @@ export default function Home() {
                   href={WHATSAPP_DEFAULT}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 w-full rounded-2xl px-8 py-5 font-bold text-white transition-all hover:scale-[1.02] hover:brightness-110 shadow-2xl shadow-[#25D366]/25"
+                  className="touch-target flex items-center justify-center gap-3 w-full rounded-2xl px-6 sm:px-8 py-4 sm:py-5 min-h-[52px] text-sm sm:text-base font-bold text-white transition-all active:scale-[0.98] sm:hover:scale-[1.02] hover:brightness-110 shadow-2xl shadow-[#25D366]/25"
                   style={{ backgroundColor: '#25D366' }}
                 >
                   <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -906,7 +916,7 @@ export default function Home() {
                   href={TELEGRAM_DEFAULT}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 w-full rounded-2xl px-8 py-5 font-bold text-white transition-all hover:scale-[1.02] hover:brightness-110 shadow-2xl shadow-[#0088cc]/25"
+                  className="touch-target flex items-center justify-center gap-3 w-full rounded-2xl px-6 sm:px-8 py-4 sm:py-5 min-h-[52px] text-sm sm:text-base font-bold text-white transition-all active:scale-[0.98] sm:hover:scale-[1.02] hover:brightness-110 shadow-2xl shadow-[#0088cc]/25"
                   style={{ backgroundColor: '#0088cc' }}
                 >
                   <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -940,22 +950,21 @@ export default function Home() {
       </main>
 
       {/* ════ FOOTER ════ */}
-      <footer className="border-t border-gray-800 bg-gray-950 px-6 py-6">
+      <footer className="border-t border-gray-800 bg-gray-950 px-4 sm:px-6 py-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:justify-between sm:gap-4">
             <p className="text-sm font-extrabold">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">FX:Rich</span>
               <span className="text-white"> Traders</span>
             </p>
-            <div className="flex items-center gap-4 text-xs text-gray-600">
-              {NAV_LINKS.map((link, i) => (
-                <span key={link.id} className="flex items-center gap-4">
-                  <button onClick={() => scrollTo(link.id)} className="hover:text-emerald-400 transition-colors">{link.label}</button>
-                  {i < NAV_LINKS.length - 1 && <span className="text-gray-800">·</span>}
-                </span>
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-2 text-xs text-gray-600 max-w-md sm:max-w-none">
+              {NAV_LINKS.map((link) => (
+                <button key={link.id} type="button" onClick={() => scrollTo(link.id)} className="touch-target px-2 py-1 hover:text-emerald-400 transition-colors">
+                  {link.label}
+                </button>
               ))}
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-600">
               <a href="https://t.me/rithuusalve"       target="_blank" rel="noopener noreferrer" className="hover:text-[#0088cc] transition-colors">Telegram</a>
               <span className="text-gray-800">·</span>
               <a href="https://instagram.com/rithuusalve" target="_blank" rel="noopener noreferrer" className="hover:text-pink-400 transition-colors">Instagram</a>
@@ -965,7 +974,7 @@ export default function Home() {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-xs text-gray-700">© {new Date().getFullYear()} FX:Rich Traders by Rithuu. All rights reserved.</p>
-            <p className="text-xs text-gray-800 max-w-xl text-right">
+            <p className="text-xs text-gray-800 max-w-xl text-center sm:text-right">
               <span className="text-gray-700">Risk Disclaimer: </span>
               Educational content only. Forex trading carries significant risk. Past performance is not indicative of future results.
             </p>
@@ -974,12 +983,12 @@ export default function Home() {
       </footer>
 
       {/* ════ MOBILE STICKY CTA ════ */}
-      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-gray-950/95 backdrop-blur-xl border-t border-gray-800 px-4 py-3">
+      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-gray-950/95 backdrop-blur-xl border-t border-gray-800 px-4 pt-3 safe-bottom">
         <a
           href={WA_RESERVE}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex w-full items-center justify-center rounded-xl bg-[#25D366] py-3.5 font-bold text-white hover:brightness-110 transition-all text-sm shadow-xl shadow-[#25D366]/30"
+          className="touch-target flex w-full items-center justify-center rounded-xl bg-[#25D366] py-3.5 min-h-[48px] font-bold text-white active:brightness-95 transition-all text-sm shadow-xl shadow-[#25D366]/30"
         >
           Reserve Seat — ₹2,000
         </a>

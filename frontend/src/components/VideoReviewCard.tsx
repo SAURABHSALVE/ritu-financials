@@ -46,7 +46,7 @@ export function VideoReviewCard({ name, role, src, poster, className = '' }: Pro
       ref={containerRef}
       className={`group relative overflow-hidden rounded-2xl bg-gray-900 border border-gray-800 hover:border-emerald-500/25 hover:shadow-2xl hover:shadow-emerald-900/15 transition-all duration-300 card-gradient-border ${className}`}
     >
-      <div className="relative aspect-[9/16] max-h-[min(72vh,560px)] mx-auto bg-gray-950">
+      <div className="relative aspect-[9/16] max-h-[min(62dvh,480px)] sm:max-h-[min(72vh,560px)] mx-auto bg-gray-950">
         {/* Video loads only after user taps play — no multi‑MB download on page load */}
         <video
           ref={videoRef}
@@ -90,9 +90,9 @@ export function VideoReviewCard({ name, role, src, poster, className = '' }: Pro
             type="button"
             onClick={handlePlay}
             aria-label={`Play video review from ${name}`}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+            className="touch-target absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
           >
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/90 text-gray-950 shadow-xl shadow-emerald-500/40 transition-transform group-hover:scale-110 group-hover:bg-emerald-400">
+            <span className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-emerald-500/90 text-gray-950 shadow-xl shadow-emerald-500/40 transition-transform active:scale-95 sm:group-hover:scale-110 sm:group-hover:bg-emerald-400">
               <svg className="ml-1 h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M8 5v14l11-7z" />
               </svg>

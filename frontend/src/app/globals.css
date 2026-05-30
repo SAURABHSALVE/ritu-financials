@@ -1,5 +1,54 @@
 @import "tailwindcss";
 
+/* ─── Mobile / cross-device base ─────────────────────────────────────────────── */
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iPhone notch / home indicator */
+.safe-top {
+  padding-top: max(0px, env(safe-area-inset-top));
+}
+.safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.main-pad-mobile {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+/* 44px minimum touch targets (Apple HIG) */
+.touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-a,
+  .animate-float-b,
+  .animate-float-c,
+  .animate-marquee,
+  .animate-gradient,
+  .animate-glow,
+  .animate-shimmer,
+  .animate-spin-slow,
+  .enroll-rise,
+  .enroll-seat-pulse,
+  .enroll-border-glow {
+    animation: none !important;
+  }
+  .enroll-rise {
+    opacity: 1;
+  }
+}
+
 /* ─── Floating orbs ─────────────────────────────────────────────────────────── */
 @keyframes float-a {
   0%,100% { transform: translateY(0px)   rotate(0deg)  scale(1);    }
